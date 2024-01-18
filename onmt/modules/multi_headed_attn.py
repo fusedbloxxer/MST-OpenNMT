@@ -269,10 +269,10 @@ class MultiHeadedAttention(torch.nn.Module):
         max_relative_positions: int = 0,
         relative_positions_buckets: int = 0,
         rotary_interleave: bool = True,
-        rotary_theta: int = 1e4,
+        rotary_theta: int = 10_000,
         rotary_dim: int = 0,
-        attn_type: str = None,
-        self_attn_type: str = None,
+        attn_type: Optional[str] = None,
+        self_attn_type: Optional[str] = None,
         add_qkvbias=False,
         num_kv=0,
         use_ckpting=[],
@@ -416,7 +416,7 @@ class MultiHeadedAttention(torch.nn.Module):
         sliding_window: Optional[int] = 0,
         step: Optional[int] = 0,
         return_attn: Optional[bool] = False,
-        self_attn_type: str = None,
+        self_attn_type: Optional[str] = None,
     ) -> Tuple[Tensor, Tensor]:
         """
         Compute the context vector and the attention vectors.
