@@ -154,6 +154,10 @@ class TransformerDecoderLayerBase(nn.Module):
             self.layer_norm_1 = RMSNorm(d_model, eps=norm_eps)
             if parallel_residual and not shared_layer_norm:
                 self.layer_norm_res = RMSNorm(d_model, eps=norm_eps)
+        elif layer_norm == "identity":
+            self.layer_norm_1 = nn.Identity()
+            if parallel_residual and not shared_layer_norm:
+                self.layer_norm_res = nn.Identity()
         else:
             raise ValueError(f"{layer_norm} layer norm type is not supported")
 
@@ -199,7 +203,7 @@ class TransformerDecoderLayerBase(nn.Module):
             # Case 3: full_context, 1 align heads -> full cte guided align
             attn_align = attns.mean(dim=1)
         return layer_out, top_attn, attn_align
-
+ 
     def update_dropout(self, dropout, attention_dropout):
         self.self_attn.update_dropout(attention_dropout)
         self.feed_forward.update_dropout(dropout)
@@ -337,6 +341,8 @@ class TransformerDecoderLayer(TransformerDecoderLayerBase):
             self.layer_norm_2 = nn.LayerNorm(d_model, eps=norm_eps)
         elif layer_norm == "rms":
             self.layer_norm_2 = RMSNorm(d_model, eps=norm_eps)
+        elif layer_norm == "identity":
+            self.layer_norm_2 = nn.Identity()
         else:
             raise ValueError(f"{layer_norm} layer norm type is not supported")
 
@@ -424,10 +430,17 @@ class TransformerDecoderLayer(TransformerDecoderLayerBase):
 
 class TransformerDecoderBase(DecoderBase):
     def __init__(
-        self, d_model, copy_attn, embeddings, alignment_layer, layer_norm, norm_eps
+        self,
+        d_model,
+        copy_attn,
+        embeddings,
+        alignment_layer,
+        layer_norm,
+        norm_eps
     ):
         super(TransformerDecoderBase, self).__init__()
 
+        # Word + Pos Embeddings
         self.embeddings = embeddings
 
         # Decoder State
@@ -441,6 +454,8 @@ class TransformerDecoderBase(DecoderBase):
             self.layer_norm = nn.LayerNorm(d_model, eps=norm_eps)
         elif layer_norm == "rms":
             self.layer_norm = RMSNorm(d_model, eps=norm_eps)
+        elif layer_norm == 'identity':
+            self.layer_norm = nn.Identity()
         else:
             raise ValueError(f"{layer_norm} layer norm type is not supported")
 
@@ -522,10 +537,10 @@ class TransformerDecoderBase(DecoderBase):
                     }
 
     def detach_state(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def forward(self, *args, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def update_dropout(self, dropout, attention_dropout):
         self.embeddings.update_dropout(dropout)

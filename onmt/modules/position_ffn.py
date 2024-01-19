@@ -69,6 +69,8 @@ class PositionwiseFeedForward(nn.Module):
             self.layer_norm = nn.LayerNorm(d_model, eps=norm_eps)
         elif layer_norm == "rms" and not parallel_residual:
             self.layer_norm = RMSNorm(d_model, eps=norm_eps)
+        elif layer_norm == 'identity' and not parallel_residual:
+            self.layer_norm = nn.Identity()
         elif not parallel_residual:
             raise ValueError(f"{layer_norm} layer norm type is not supported")
         self.parallel_residual = parallel_residual

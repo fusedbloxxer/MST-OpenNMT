@@ -90,7 +90,7 @@ class AverageAttention(nn.Module):
                 model_dim, model_dim, dropout, pos_ffn_activation_fn
             )
         self.gating_layer = nn.Linear(model_dim * 2, model_dim * 2)
-        self.layer_cache = False, {"prev_g": torch.tensor([])}
+        self.layer_cache: tuple[bool, dict[str, Tensor]] = False, {"prev_g": torch.tensor([])}
 
     # @torch.jit.script
     def forward(self, layer_in, mask=None, step=None):
